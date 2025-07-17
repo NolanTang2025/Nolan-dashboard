@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Iris Tang's Data Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:700,400&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Montserrat', 'PingFang SC', 'Microsoft YaHei', 'SimHei', Arial, sans-serif;
+      padding: 0;
+      margin: 0;
+      background: linear-gradient(135deg, #e0e7ff 0%, #f7f7f7 100%);
+      min-height: 100vh;
+      color: #222;
+    }
+    .header {
+      background: linear-gradient(90deg, #6366f1 0%, #60a5fa 100%);
+      color: #fff;
+      padding: 40px 0 20px 0;
+      text-align: center;
+      box-shadow: 0 2px 12px rgba(99,102,241,0.1);
+    }
+    .header h1 {
+      margin: 0 0 10px 0;
+      font-size: 2.8rem;
+      letter-spacing: 2px;
+      font-weight: 700;
+    }
+    .profile {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: -30px;
+      margin-bottom: 30px;
+    }
+    .avatar {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      border: 4px solid #6366f1;
+      box-shadow: 0 4px 16px rgba(99,102,241,0.15);
+      margin-bottom: 12px;
+      object-fit: cover;
+      background: #fff;
+    }
+    .name {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .bio {
+      font-size: 1.1rem;
+      color: #555;
+      margin-bottom: 10px;
+      text-align: center;
+      max-width: 500px;
+    }
+    .contact {
+      display: flex;
+      gap: 18px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .contact a {
+      color: #6366f1;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+    .contact a:hover {
+      color: #1e293b;
+      text-decoration: underline;
+    }
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 32px;
+      max-width: 1200px;
+      margin: 0 auto 40px auto;
+      padding: 0 24px;
+    }
+    .chart-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(99,102,241,0.08);
+      padding: 28px 18px 18px 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+      position: relative;
+    }
+    .chart-card:hover {
+      transform: translateY(-6px) scale(1.03);
+      box-shadow: 0 8px 32px rgba(99,102,241,0.18);
+    }
+    .chart-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #6366f1;
+      letter-spacing: 1px;
+    }
+    @media (max-width: 700px) {
+      .dashboard {
+        grid-template-columns: 1fr;
+        padding: 0 6px;
+      }
+      .profile {
+        margin-top: 0;
+      }
+    }
+    .fun-fish-btn {
+      position: fixed;
+      left: 32px;
+      bottom: 32px;
+      right: auto;
+      z-index: 10000;
+      background: #fff;
+      color: #6366f1;
+      border: none;
+      border-radius: 50px;
+      box-shadow: 0 2px 12px rgba(99,102,241,0.13);
+      padding: 14px 28px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s, transform 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .fun-fish-btn:hover {
+      background: #6366f1;
+      color: #fff;
+      transform: scale(1.08) rotate(-3deg);
+    }
+    .fun-toast {
+      position: fixed;
+      left: 40px;
+      bottom: 90px;
+      right: auto;
+      background: #fff;
+      color: #222;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(99,102,241,0.13);
+      padding: 18px 28px;
+      font-size: 1.08rem;
+      font-weight: 500;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .fun-toast.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .avatar.fun-rotate {
+      animation: fun-rotate 0.7s cubic-bezier(.68,-0.55,.27,1.55);
+    }
+    @keyframes fun-rotate {
+      0% { transform: rotate(0deg); }
+      40% { transform: rotate(360deg) scale(1.15); }
+      100% { transform: rotate(0deg); }
+    }
+    .projects-timeline {
+      position: relative;
+      max-width: 900px;
+      margin: 40px auto 0 auto;
+      padding: 0 0 40px 0;
+    }
+    .timeline-title {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #6366f1;
+      margin-bottom: 24px;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+    .timeline-list {
+      position: relative;
+      margin: 0;
+      padding: 0 0 0 30px;
+      border-left: 4px solid #6366f1;
+    }
+    .timeline-item {
+      position: relative;
+      margin-bottom: 38px;
+      padding-left: 18px;
+      display: flex;
+      align-items: flex-start;
+    }
+    .timeline-time-label {
+      min-width: 70px;
+      text-align: right;
+      font-size: 1.05rem;
+      color: #6366f1;
+      font-weight: 700;
+      margin-right: 18px;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+    .timeline-dot {
+      position: absolute;
+      left: -13px;
+      top: 6px;
+      width: 22px;
+      height: 22px;
+      background: #fff;
+      border: 4px solid #6366f1;
+      border-radius: 50%;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      box-shadow: 0 2px 8px rgba(99,102,241,0.10);
+    }
+    .timeline-content {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(99,102,241,0.08);
+      padding: 18px 22px 14px 22px;
+      margin-left: 18px;
+      min-width: 220px;
+      max-width: 600px;
+      position: relative;
+      top: -10px;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .timeline-content:hover {
+      box-shadow: 0 8px 32px rgba(99,102,241,0.18);
+      transform: scale(1.03);
+    }
+    .timeline-title-item {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #222;
+      margin-bottom: 2px;
+    }
+    .timeline-time {
+      font-size: 0.98rem;
+      color: #888;
+      margin-bottom: 8px;
+    }
+    .timeline-desc {
+      font-size: 1.05rem;
+      color: #444;
+      margin-bottom: 8px;
+    }
+    .timeline-highlight {
+      font-size: 0.98rem;
+      color: #6366f1;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .timeline-link {
+      color: #60a5fa;
+      text-decoration: none;
+      font-weight: 600;
+      margin-right: 16px;
+      transition: color 0.2s;
+    }
+    .timeline-link:hover {
+      color: #1e293b;
+      text-decoration: underline;
+    }
+    @media (max-width: 700px) {
+      .timeline-title { font-size: 1.3rem; }
+      .timeline-content { max-width: 98vw; }
+      .projects-timeline { padding-left: 0; }
+      .timeline-list { padding-left: 18px; }
+    }
+    .resume-drawer-btn {
+      position: fixed;
+      right: 32px;
+      bottom: 90px;
+      z-index: 10000;
+      background: #6366f1;
+      color: #fff;
+      border: none;
+      border-radius: 18px;
+      box-shadow: 0 2px 12px rgba(99,102,241,0.13);
+      padding: 14px 38px 10px 38px;
+      font-size: 1.15rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s, bottom 0.3s;
+      letter-spacing: 1px;
+    }
+    .resume-drawer-btn:hover {
+      background: #fff;
+      color: #6366f1;
+    }
+    @media (max-width: 700px) {
+      .resume-drawer-btn {
+        right: 10px;
+        bottom: 80px;
+        padding: 10px 18px 8px 18px;
+        font-size: 1rem;
+      }
+      .fun-fish-btn {
+        left: 10px;
+        bottom: 10px;
+        right: auto;
+        padding: 10px 18px;
+        font-size: 1rem;
+      }
+    }
+    .resume-drawer {
+      position: fixed;
+      left: 0;
+      bottom: -100vh;
+      width: 100vw;
+      height: 80vh;
+      background: linear-gradient(135deg, #e0e7ffcc 0%, #f7f7f7cc 100%);
+      backdrop-filter: blur(12px) saturate(1.2);
+      box-shadow: 0 -8px 32px rgba(99,102,241,0.13);
+      border-radius: 24px 24px 0 0;
+      z-index: 1201;
+      transition: bottom 0.5s cubic-bezier(.68,-0.55,.27,1.55);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow: hidden;
+    }
+    .resume-drawer-inner {
+      width: 100%;
+      max-width: 1040px;
+      margin: 0 auto;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding-bottom: 100px;
+    }
+    .resume-drawer.open {
+      bottom: 0;
+    }
+    .resume-drawer-header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 32px 8px 32px;
+      background: #fff;
+      border-radius: 24px 24px 0 0;
+      box-shadow: 0 2px 12px rgba(99,102,241,0.06);
+    }
+    .resume-drawer-title {
+      font-size: 1.18rem;
+      font-weight: 700;
+      color: #6366f1;
+    }
+    .resume-drawer-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: #6366f1;
+      cursor: pointer;
+      font-weight: 700;
+      transition: color 0.2s;
+    }
+    .resume-drawer-close:hover {
+      color: #f43f5e;
+    }
+    .resume-pdf {
+      width: 98%;
+      height: 60%;
+      border: none;
+      border-radius: 18px;
+      margin: 0 auto 18px auto;
+      background: #fff;
+      box-shadow: 0 8px 32px rgba(99,102,241,0.13), 0 1.5px 8px #fff8;
+      transition: box-shadow 0.2s, transform 0.2s;
+      outline: 2.5px solid #a5b4fc44;
+      min-height: 180px;
+      max-height: 100%;
+    }
+    .resume-pdf.pdf-full {
+      height: calc(100% - 110px);
+      min-height: 320px;
+      margin-bottom: 0;
+    }
+    .resume-tip {
+      position: absolute;
+      right: 38px;
+      bottom: 38px;
+      background: #fff;
+      color: #6366f1;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(99,102,241,0.13);
+      padding: 12px 22px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      z-index: 1300;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .resume-tip.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    @media (max-width: 700px) {
+      .resume-drawer { height: 90vh; }
+      .resume-drawer-header { padding: 10px 10px 4px 10px; }
+      .resume-drawer-title { font-size: 1rem; }
+      .resume-pdf { height: 80%; }
+      .resume-tip { right: 10px; bottom: 10px; font-size: 0.98rem; }
+      .fun-toast { left: 10px; bottom: 10px; right: auto; font-size: 0.98rem; }
+    }
+    @media (max-width: 900px) {
+      .resume-drawer-inner {
+        max-width: 100vw;
+      }
+    }
+    .resume-ai-qa {
+      width: 98%;
+      margin: 0 auto 18px auto;
+      background: linear-gradient(120deg, #e0e7ff 60%, #f7f7f7 100%);
+      border-radius: 16px;
+      padding: 18px 18px 12px 18px;
+      box-shadow: 0 4px 24px rgba(99,102,241,0.10);
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+      position: relative;
+    }
+    .resume-ai-qa-close {
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: none;
+      background: #fff;
+      color: #6366f1;
+      font-size: 1.3rem;
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(99,102,241,0.10);
+      cursor: pointer;
+      z-index: 10;
+      transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+    }
+    .resume-ai-qa-close:hover {
+      background: #6366f1;
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(99,102,241,0.18);
+    }
+    .resume-ai-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 2px;
+    }
+    .resume-ai-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 2px 8px #a5b4fc44;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.7rem;
+      border: 2px solid #6366f1;
+    }
+    .resume-ai-welcome {
+      font-size: 1.08rem;
+      color: #6366f1;
+      font-weight: 600;
+    }
+    .resume-ai-history {
+      max-height: 180px;
+      overflow-y: auto;
+      margin-bottom: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .resume-ai-bubble {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+    }
+    .resume-ai-bubble.ai {
+      flex-direction: row;
+      justify-content: flex-start;
+    }
+    .resume-ai-bubble.user {
+      flex-direction: row-reverse;
+      justify-content: flex-end;
+    }
+    .resume-ai-msg {
+      max-width: 70%;
+      background: #fff;
+      border-radius: 12px 12px 12px 4px;
+      padding: 8px 14px;
+      font-size: 1.02rem;
+      color: #222;
+      box-shadow: 0 1px 4px #a5b4fc22;
+      word-break: break-word;
+      white-space: pre-line;
+    }
+    .resume-ai-bubble.user .resume-ai-msg {
+      background: #6366f1;
+      color: #fff;
+      border-radius: 12px 12px 4px 12px;
+    }
+    .resume-ai-bubble.ai .resume-ai-avatar {
+      margin-right: 0;
+    }
+    .resume-ai-bubble.user .resume-ai-avatar {
+      margin-left: 0;
+    }
+    .resume-ai-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      align-items: flex-start;
+      justify-content: center;
+      margin-bottom: 16px;
+      padding: 8px 0 0 0;
+    }
+    .resume-ai-btn {
+      display: flex;
+      align-items: center;
+      background: #fff;
+      color: #374151;
+      border: 1.5px solid #6366f1;
+      border-radius: 16px;
+      padding: 14px 28px 14px 18px;
+      font-size: 1.07rem;
+      font-weight: 500;
+      cursor: pointer;
+      margin-bottom: 0;
+      margin-right: 0;
+      box-shadow: 0 2px 12px rgba(99,102,241,0.08);
+      transition: border 0.18s, box-shadow 0.18s, background 0.18s, color 0.18s, transform 0.18s;
+      letter-spacing: 0.2px;
+      min-width: 260px;
+      max-width: 420px;
+      text-align: left;
+      justify-content: flex-start;
+      position: relative;
+      overflow: hidden;
+    }
+    .resume-ai-btn::before {
+      content: '💬';
+      font-size: 1.18rem;
+      margin-right: 12px;
+      display: inline-block;
+      vertical-align: middle;
+      opacity: 0.82;
+    }
+    .resume-ai-btn::after {
+      content: '\2192';
+      font-size: 1.18rem;
+      color: #6366f1;
+      margin-left: auto;
+      margin-right: 0;
+      display: inline-block;
+      vertical-align: middle;
+      opacity: 0.7;
+      transition: margin-left 0.18s;
+    }
+    .resume-ai-btn:hover, .resume-ai-btn:focus {
+      background: #f5f7ff;
+      color: #1e293b;
+      border-color: #60a5fa;
+      box-shadow: 0 6px 24px rgba(99,102,241,0.13);
+      transform: translateY(-2px) scale(1.025);
+    }
+    .resume-ai-btn:hover::after, .resume-ai-btn:focus::after {
+      margin-left: 18px;
+      color: #2563eb;
+      opacity: 1;
+    }
+    .resume-ai-btn:active {
+      background: #e0e7ff;
+      color: #374151;
+      border-color: #6366f1;
+      box-shadow: 0 2px 8px rgba(99,102,241,0.10);
+      transform: scale(0.98);
+    }
+    .resume-ai-btn span {
+      flex: 1;
+      text-align: left;
+      white-space: normal;
+      word-break: break-word;
+    }
+    @media (max-width: 900px) {
+      .resume-ai-btn {
+        min-width: 90vw;
+        max-width: 98vw;
+        font-size: 1rem;
+        padding: 12px 16px 12px 12px;
+      }
+    }
+    @media (max-width: 700px) {
+      .resume-ai-row {
+        gap: 10px;
+        margin-bottom: 4px;
+        padding: 4px 0 0 0;
+      }
+      .resume-ai-btn {
+        min-width: 92vw;
+        max-width: 99vw;
+        font-size: 0.98rem;
+        border-radius: 12px;
+        padding: 10px 10px 10px 10px;
+      }
+      .resume-ai-btn::before, .resume-ai-btn::after {
+        font-size: 1.05rem;
+      }
+    }
+    .resume-ai-btn:disabled {
+      background: #a5b4fc;
+      cursor: not-allowed;
+    }
+    .resume-ai-answer {
+      background: #fff;
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-size: 1.02rem;
+      color: #222;
+      min-height: 32px;
+      margin-top: 2px;
+      box-shadow: 0 1px 4px rgba(99,102,241,0.04);
+      white-space: pre-line;
+    }
+    .resume-ai-loading {
+      color: #6366f1;
+      font-size: 0.98rem;
+      margin-top: 2px;
+    }
+    .footer-nav {
+      width: 100vw;
+      background: linear-gradient(90deg, #6366f1 0%, #60a5fa 100%);
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 32px;
+      padding: 18px 0 12px 0;
+      font-size: 1.08rem;
+      font-weight: 500;
+      position: fixed;
+      left: 0;
+      bottom: 0;
+      z-index: 9999;
+      box-shadow: 0 -2px 12px rgba(99,102,241,0.10);
+      letter-spacing: 1px;
+    }
+    .footer-link {
+      color: #fff;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.2s;
+      opacity: 0.92;
+    }
+    .footer-link:hover {
+      color: #fbbf24;
+      opacity: 1;
+      text-decoration: underline;
+    }
+    .footer-copyright {
+      margin-left: 18px;
+      font-size: 0.98rem;
+      opacity: 0.7;
+    }
+    @media (max-width: 700px) {
+      .footer-nav { font-size: 0.98rem; gap: 12px; padding: 10px 0 6px 0; }
+      .footer-copyright { display: none; }
+    }
+    .skills-section {
+      max-width: 1100px;
+      margin: 48px auto 32px auto;
+      padding: 0 24px;
+      text-align: center;
+    }
+    .skills-title {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #6366f1;
+      margin-bottom: 24px;
+      letter-spacing: 1px;
+    }
+    .skills-group-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 28px;
+      justify-content: center;
+    }
+    .skills-group {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(99,102,241,0.08);
+      padding: 22px 28px 18px 28px;
+      min-width: 220px;
+      max-width: 320px;
+      flex: 1 1 220px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .skills-group:hover {
+      transform: translateY(-4px) scale(1.03);
+      box-shadow: 0 8px 32px rgba(99,102,241,0.13);
+    }
+    .skills-group-icon {
+      font-size: 2rem;
+      margin-bottom: 8px;
+    }
+    .skills-group-title {
+      font-size: 1.13rem;
+      font-weight: 700;
+      color: #6366f1;
+      margin-bottom: 8px;
+    }
+    .skills-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+    }
+    .skills-tag {
+      background: #e0e7ff;
+      color: #374151;
+      border-radius: 8px;
+      padding: 4px 12px;
+      font-size: 0.98rem;
+      font-weight: 500;
+      margin-bottom: 4px;
+      transition: background 0.2s, color 0.2s;
+    }
+    .skills-group:hover .skills-tag {
+      background: #6366f1;
+      color: #fff;
+    }
+    @media (max-width: 900px) {
+      .skills-group-list { flex-direction: column; align-items: center; }
+      .skills-group { max-width: 98vw; }
+    }
+    .skills-section {
+      margin-top: 64px;
+      margin-bottom: 64px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1 id="dashboard-title">📊 Nolan Tang's Data Dashboard</h1>
+    <div id="dashboard-slogan" style="font-size:1.1rem;opacity:0.85;">Data · Life · Growth</div>
+  </div>
+  <div class="profile">
+    <img class="avatar" src="./image/avatar.jpg" alt="Nolan Tang">
+    <div class="name" id="profile-name">Nolan Tang</div>
+    <div class="bio" id="profile-bio">Full-stack developer passionate about data visualization, AI, and frontend innovation.<br>Based in Shanghai. Let's connect!</div>
+    <div class="contact" id="profile-contact">
+      <a href="mailto:nolantang2023@gmail.com">nolantang2023@gmail.com</a>
+      <a href="https://www.linkedin.com/in/nolantang/" target="_blank">LinkedIn</a>
+      <a href="https://github.com/IrisTang2024" target="_blank">GitHub</a>
+      <a href="https://iristang.com" target="_blank">Personal Site</a>
+    </div>
+  </div>
+  <button class="fun-fish-btn" id="fun-fish-btn" title="Take a Break">🐟 Take a Break</button>
+  <div class="fun-toast" id="fun-toast"></div>
+  <button class="resume-drawer-btn" id="resume-drawer-btn">📄 View Resume</button>
+  <div class="resume-drawer" id="resume-drawer">
+    <div class="resume-drawer-inner">
+      <div class="resume-drawer-header">
+        <span class="resume-drawer-title" id="resume-drawer-title">My PDF Resume</span>
+        <button class="resume-drawer-close" id="resume-drawer-close" title="Close">×</button>
+      </div>
+      <iframe class="resume-pdf" id="resume-pdf" src="resume.pdf"></iframe>
+      <div class="resume-tip" id="resume-tip"></div>
+      <div class="resume-ai-qa" id="resume-ai-qa">
+        <button class="resume-ai-qa-close" id="resume-ai-qa-close" title="Close Q&A">×</button>
+        <div class="resume-ai-header">
+          <div class="resume-ai-avatar" id="resume-ai-avatar">🤖</div>
+          <div class="resume-ai-welcome" id="resume-ai-welcome">AI Assistant Nolan · Resume Q&A</div>
+        </div>
+        <div class="resume-ai-history" id="resume-ai-history"></div>
+        <div class="resume-ai-row">
+          <!-- Quick question buttons rendered by JS -->
+        </div>
+        <div class="resume-ai-loading" id="resume-ai-loading" style="display:none;">AI is thinking...</div>
+      </div>
+    </div>
+  </div>
+  <div class="dashboard">
+    <div class="chart-card">
+      <div class="chart-title" id="study-title">Study Hours</div>
+      <canvas id="studyChart" width="400" height="200"></canvas>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title" id="mood-title">Mood Score</div>
+      <canvas id="moodChart" width="400" height="200"></canvas>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title" id="task-title">Tasks Done</div>
+      <canvas id="taskChart" width="400" height="200"></canvas>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title" id="reddit-title">Reddit Posts</div>
+      <canvas id="redditChart" width="400" height="200"></canvas>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title" id="github-title">GitHub Commits</div>
+      <canvas id="githubChart" width="400" height="200"></canvas>
+    </div>
+  </div>
+  <section class="projects-timeline">
+    <div class="timeline-title" id="projects-title">My AI Projects</div>
+    <div class="timeline-list" id="projects-list">
+      <!-- Timeline projects rendered by JS -->
+    </div>
+  </section>
+  <section class="skills-section">
+    <div class="skills-title" id="skills-title">Skill Set</div>
+    <div class="skills-group-list" id="skills-group-list">
+      <!-- JS renders skill groups -->
+    </div>
+  </section>
+  <div class="footer-nav" id="footer-nav">
+    <a class="footer-link" href="#" onclick="window.scrollTo({top:0,behavior:'smooth'})">Home</a>
+    <a class="footer-link" href="#projects-title">AI Projects</a>
+    <a class="footer-link" href="#resume-drawer-btn">Resume</a>
+    <a class="footer-link" href="mailto:nolantang2023@gmail.com">Contact</a>
+    <span class="footer-copyright" id="footer-copyright">© 2025 Nolan Tang</span>
+  </div>
+  <script>
+    // --- English-only data and logic ---
+    // Fun tips and self intro
+    const funTips = [
+      '“Taking a break makes me happy, coding makes me grow!”',
+      '“Did you take a break today?”',
+      '“Don\'t just look at data, remember to drink water!”',
+      '“Even full-stack devs need break time!”',
+      '“Data tells stories, but breaks are more fun!”',
+      '“Feeling bored? Try clicking my avatar!”',
+      '“Life is more than code, there are breaks and jokes too.”',
+      '“A break a day keeps burnout away!”',
+      '“Every click you make encourages me!”',
+      '“Don\'t forget to check out my GitHub and LinkedIn!”'
+    ];
+    const funSelfIntro = [
+      'Hi, I\'m Nolan. Good at coding, great at taking breaks 😎',
+      'Nolan is online, bugs are offline, breaks are always on!',
+      'Full-stack dev / jokester / break master, say hi~',
+      'You clicked my avatar, so here\'s a spin for you!',
+      '“Data viz is cool, but I\'m cooler!”',
+      '“Don\'t be fooled by my serious avatar, I\'m actually fun.”'
+    ];
+    const funWelcome = 'Welcome to my data dashboard! Click the avatar for a surprise, and try the break button in the lower left~';
+    const resumeTips = [
+      'You can scroll up and down to preview the resume~',
+      'Feel free to ask questions in the AI Q&A area!',
+      'Resume content supports both English and Chinese.',
+      'To download the PDF, right-click and save as.',
+      'AI Q&A supports multi-turn questions, give it a try!'
+    ];
+    // Project data (English)
+    const projectsData = [
+      {
+        icon: '🎨',
+        title: 'Personal Color',
+        time: 'Mar 2025',
+        desc: 'AI-powered Korean-style "personal color test" to help users discover their unique seasonal palette and receive personalized outfit and makeup suggestions.',
+        highlight: 'Launched on App Store',
+        link: { text: 'App Store', url: '#' }
+      },
+      {
+        icon: '🧴',
+        title: 'Memory Fragrance',
+        time: 'Apr 2025',
+        desc: 'AI helps users find the perfume that best matches the memory in their photos.',
+        highlight: 'Official website available',
+        link: { text: 'Website', url: '#' }
+      },
+      {
+        icon: '🤖',
+        title: 'AI Skill & Side Hustle Match APP',
+        time: 'May-Jun 2025',
+        desc: 'AI matches users’ skills to suitable side hustles. Beta version is now available.',
+        highlight: 'Contact for beta access',
+        link: { text: 'Contact', url: 'mailto:datatreeconsult@gmail.com' }
+      },
+      {
+        icon: '🧑‍💻',
+        title: 'AI Emotional Companion APP',
+        time: 'Oct-Nov 2024',
+        desc: 'A Chrome extension: After users set a focus goal, if they visit entertainment sites, a virtual character pops up to gently remind them to stay focused.',
+        highlight: 'AI companion, behavioral intervention',
+        link: null
+      }
+    ];
+    // Skill set data (English)
+    const skillsData = [
+      {
+        icon: '💻',
+        title: 'Programming & Data Analysis',
+        tags: ['Python', 'R', 'SQL', 'JavaScript', 'React', 'Node.js', 'Tableau', 'Excel', 'A/B Testing', 'Data Visualization']
+      },
+      {
+        icon: '🤖',
+        title: 'AI & Machine Learning',
+        tags: ['TensorFlow', 'Keras', 'LightGBM', 'CatBoost', 'Prompt Engineering', 'GPT-4o', 'SpaCy', 'Hyperopt']
+      },
+      {
+        icon: '🗄️',
+        title: 'Data Engineering & Cloud',
+        tags: ['Big Data', 'Cloud Computing', 'Data Pipeline', 'Kafka', 'Web Scraping', 'Database Design', 'SQL Optimization']
+      },
+      {
+        icon: '🛠️',
+        title: 'Product & Project Management',
+        tags: ['MVP Development', 'Product Testing', 'BRD Writing', 'Project Management', 'Team Collaboration']
+      },
+      {
+        icon: '📊',
+        title: 'Business Analysis & Marketing',
+        tags: ['Market Analysis', 'Business Intelligence', 'Segment Marketing', 'Content Marketing', 'Requirement Analysis']
+      },
+      {
+        icon: '🌏',
+        title: 'Language & Communication',
+        tags: ['Fluent in Chinese & English', 'Business Writing', 'Team Communication']
+      }
+    ];
+    // Render projects timeline
+    function renderProjects() {
+      const list = document.getElementById('projects-list');
+      list.innerHTML = '';
+      projectsData.forEach(p => {
+        const item = document.createElement('div');
+        item.className = 'timeline-item';
+        item.innerHTML = `
+          <div class="timeline-time-label">${p.time}</div>
+          <div style="position:relative;flex:1;">
+            <div class="timeline-dot">${p.icon}</div>
+            <div class="timeline-content">
+              <div class="timeline-title-item">${p.title}</div>
+              <div class="timeline-desc">${p.desc}</div>
+              <div class="timeline-highlight">${p.highlight}</div>
+              ${p.link ? `<a class="timeline-link" href="${p.link.url}" target="_blank">${p.link.text}</a>` : ''}
+            </div>
+          </div>
+        `;
+        list.appendChild(item);
+      });
+    }
+    // Render skills
+    function renderSkills() {
+      const list = document.getElementById('skills-group-list');
+      list.innerHTML = '';
+      skillsData.forEach(g => {
+        const group = document.createElement('div');
+        group.className = 'skills-group';
+        group.innerHTML = `
+          <div class="skills-group-icon">${g.icon}</div>
+          <div class="skills-group-title">${g.title}</div>
+          <div class="skills-tags">${g.tags.map(t=>`<span class='skills-tag'>${t}</span>`).join('')}</div>
+        `;
+        list.appendChild(group);
+      });
+    }
+    // Toast
+    function showFunToast(msg) {
+      const toast = document.getElementById('fun-toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2600);
+    }
+    // Resume tips
+    function showResumeTip() {
+      const resumeTip = document.getElementById('resume-tip');
+      resumeTip.textContent = resumeTips[Math.floor(Math.random()*resumeTips.length)];
+      resumeTip.classList.add('show');
+      clearTimeout(window.resumeTipTimer);
+      window.resumeTipTimer = setTimeout(()=>resumeTip.classList.remove('show'), 3200);
+    }
+    // On load
+    window.addEventListener('DOMContentLoaded', function() {
+      showFunToast(funWelcome);
+      renderProjects();
+      renderSkills();
+      // Resume drawer
+      const resumeBtn = document.getElementById('resume-drawer-btn');
+      const resumeDrawer = document.getElementById('resume-drawer');
+      const resumeClose = document.getElementById('resume-drawer-close');
+      const resumePdf = document.getElementById('resume-pdf');
+      resumeBtn.onclick = function() {
+        resumeDrawer.classList.add('open');
+        showResumeTip();
+      };
+      resumeClose.onclick = function() {
+        resumeDrawer.classList.remove('open');
+      };
+      resumePdf.onload = function() {
+        resumePdf.contentWindow.onscroll = function() {
+          if(Math.random() > 0.7) showResumeTip();
+        };
+      };
+      // 关闭QA按钮逻辑
+      document.getElementById('resume-ai-qa-close').onclick = function() {
+        document.getElementById('resume-ai-qa').style.display = 'none';
+        document.getElementById('resume-pdf').classList.add('pdf-full');
+      };
+    });
+    // Avatar click
+    document.querySelector('.avatar').addEventListener('click', function() {
+      this.classList.add('fun-rotate');
+      setTimeout(() => this.classList.remove('fun-rotate'), 700);
+      showFunToast(funSelfIntro[Math.floor(Math.random()*funSelfIntro.length)]);
+    });
+    // Take a Break button
+    document.getElementById('fun-fish-btn').addEventListener('click', function() {
+      showFunToast(funTips[Math.floor(Math.random()*funTips.length)]);
+    });
+    // Chart.js
+    fetch('data.json')
+      .then(response => response.json())
+      .then(data => {
+        const labels = data.days;
+        window.studyChartObj = new Chart(document.getElementById('studyChart'), {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Study Hours',
+              data: data.studyHours,
+              backgroundColor: 'rgba(75, 192, 192, 0.6)'
+            }]
+          },
+          options: {
+            plugins: {
+              datalabels: {
+                font: {
+                  family: 'PingFang SC, Microsoft YaHei, SimHei, Arial, sans-serif',
+                  weight: 'bold',
+                  size: 14
+                },
+                color: '#222'
+              },
+              title: {
+                display: true,
+                text: 'Study Hours'
+              }
+            }
+          },
+          plugins: [ChartDataLabels]
+        });
+        window.moodChartObj = new Chart(document.getElementById('moodChart'), {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Mood Score',
+              data: data.moodScores,
+              borderColor: 'rgba(153, 102, 255, 0.8)',
+              fill: false
+            }]
+          },
+          options: {
+            plugins: {
+              datalabels: {
+                font: {
+                  family: 'PingFang SC, Microsoft YaHei, SimHei, Arial, sans-serif',
+                  weight: 'bold',
+                  size: 14
+                },
+                color: '#222'
+              },
+              title: {
+                display: true,
+                text: 'Mood Score'
+              }
+            }
+          },
+          plugins: [ChartDataLabels]
+        });
+        window.taskChartObj = new Chart(document.getElementById('taskChart'), {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Tasks Done',
+              data: data.taskDone,
+              backgroundColor: 'rgba(255, 159, 64, 0.6)'
+            }]
+          },
+          options: {
+            plugins: {
+              datalabels: {
+                font: {
+                  family: 'PingFang SC, Microsoft YaHei, SimHei, Arial, sans-serif',
+                  weight: 'bold',
+                  size: 14
+                },
+                color: '#222'
+              },
+              title: {
+                display: true,
+                text: 'Tasks Done'
+              }
+            }
+          },
+          plugins: [ChartDataLabels]
+        });
+        // Reddit chart
+        const redditData = data.redditPosts || {};
+        const redditDates = Object.keys(redditData).sort();
+        const redditCounts = redditDates.map(date => redditData[date]);
+        window.redditChartObj = new Chart(document.getElementById('redditChart'), {
+          type: 'bar',
+          data: {
+            labels: redditDates,
+            datasets: [{
+              label: 'Reddit Posts',
+              data: redditCounts,
+              backgroundColor: 'rgba(255, 99, 132, 0.6)'
+            }]
+          },
+          options: {
+            plugins: {
+              title: {
+                display: true,
+                text: '📅 Daily Reddit Posts'
+              },
+              datalabels: {
+                font: {
+                  family: 'PingFang SC, Microsoft YaHei, SimHei, Arial, sans-serif',
+                  weight: 'bold',
+                  size: 14
+                },
+                color: '#222'
+              }
+            }
+          },
+          plugins: [ChartDataLabels]
+        });
+        // GitHub chart
+        const githubData = data.githubCommits || {};
+        const githubDates = Object.keys(githubData).sort();
+        const githubCommits = githubDates.map(date => githubData[date]);
+        window.githubChartObj = new Chart(document.getElementById('githubChart'), {
+          type: 'bar',
+          data: {
+            labels: githubDates,
+            datasets: [{
+              label: 'GitHub Commits',
+              data: githubCommits,
+              backgroundColor: 'rgba(54, 162, 235, 0.6)'
+            }]
+          },
+          options: {
+            plugins: {
+              title: {
+                display: true,
+                text: '📅 Daily GitHub Commits'
+              },
+              datalabels: {
+                font: {
+                  family: 'PingFang SC, Microsoft YaHei, SimHei, Arial, sans-serif',
+                  weight: 'bold',
+                  size: 14
+                },
+                color: '#222'
+              }
+            }
+          },
+          plugins: [ChartDataLabels]
+        });
+      });
+    // Resume AI Q&A (English only)
+    // 移除输入框和Ask AI按钮相关JS
+    const resumeAIHistory = document.getElementById('resume-ai-history');
+    const resumeAIWelcome = document.getElementById('resume-ai-welcome');
+    const resumeAIAvatar = document.getElementById('resume-ai-avatar');
+    let resumeAIHistoryArr = [];
+    const resumeAIText = {
+      welcome: 'AI Assistant Nolan · Resume Q&A',
+      aiName: 'AI Assistant',
+      userName: 'You'
+    };
+    const interviewQAs = [
+      {
+        q: 'Can you tell me about yourself?',
+        a: 'I am Nolan Tang, a full-stack developer passionate about data visualization, AI, and frontend innovation. I enjoy using code and data to tell stories and have led several AI-driven projects.'
+      },
+      {
+        q: 'What are your greatest strengths?',
+        a: 'My greatest strengths are my ability to quickly learn new technologies, my experience in both frontend and backend development, and my strong communication skills.'
+      },
+      {
+        q: 'Describe a challenging project you worked on.',
+        a: 'One challenging project was building an AI-powered personal color test app. I led the team in integrating machine learning models with a user-friendly frontend, resulting in a successful App Store launch.'
+      },
+      {
+        q: 'Why do you want to work here?',
+        a: 'I am excited about your company’s mission and believe my skills in AI and product development can contribute to your innovative projects.'
+      },
+      {
+        q: 'How do you handle tight deadlines?',
+        a: 'I prioritize tasks, communicate clearly with my team, and break down complex problems into manageable steps to ensure timely delivery.'
+      },
+      {
+        q: 'What is your experience with AI technologies?',
+        a: 'I have hands-on experience with TensorFlow, Keras, GPT-4o, and have built several AI-driven applications, including recommendation systems and chatbots.'
+      }
+    ];
+    function renderAIHistory() {
+      resumeAIHistory.innerHTML = '';
+      resumeAIHistoryArr.forEach(item => {
+        const bubble = document.createElement('div');
+        bubble.className = 'resume-ai-bubble ' + item.role;
+        bubble.innerHTML = `
+          <div class="resume-ai-avatar">${item.role === 'ai' ? '🤖' : '🧑'}</div>
+          <div class="resume-ai-msg">${item.msg}</div>
+        `;
+        resumeAIHistory.appendChild(bubble);
+      });
+      resumeAIHistory.scrollTop = resumeAIHistory.scrollHeight;
+    }
+    function aiTypeWriter(text, cb) {
+      let i = 0;
+      let out = '';
+      function type() {
+        out += text[i];
+        renderAIHistory();
+        resumeAIHistory.lastChild.querySelector('.resume-ai-msg').textContent = out + (i % 2 === 0 ? '|' : '');
+        i++;
+        if (i < text.length) setTimeout(type, 18 + Math.random()*30);
+        else {
+          resumeAIHistory.lastChild.querySelector('.resume-ai-msg').textContent = text;
+          if(cb) cb();
+        }
+      }
+      type();
+    }
+    // 渲染快捷问题按钮
+    function renderQuickQuestions() {
+      const row = document.querySelector('.resume-ai-row');
+      row.innerHTML = '';
+      interviewQAs.forEach((qa, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'resume-ai-btn';
+        // 用span包裹文本，便于左对齐
+        btn.innerHTML = `<span>${qa.q}</span>`;
+        btn.onclick = function() {
+          // 用户提问
+          resumeAIHistoryArr.push({ role: 'user', msg: qa.q });
+          renderAIHistory();
+          // AI回答
+          resumeAIHistoryArr.push({ role: 'ai', msg: '' });
+          renderAIHistory();
+          setTimeout(() => {
+            aiTypeWriter(qa.a, ()=>{});
+          }, 400);
+        };
+        row.appendChild(btn);
+      });
+    }
+    renderQuickQuestions();
+  </script>
+</body>
+</html>

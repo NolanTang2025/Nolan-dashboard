@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "chartjs-plugin-datalabels": "^2.2.0",
+    "snoowrap": "^1.23.0"
+  }
+}
