@@ -425,13 +425,18 @@
       margin: 0 auto 18px auto;
       background: linear-gradient(120deg, #e0e7ff 60%, #f7f7f7 100%);
       border-radius: 16px;
-      padding: 18px 18px 12px 18px;
+      padding: 18px 18px 48px 18px; /* 增加底部内边距，防止被footer遮挡 */
       box-shadow: 0 4px 24px rgba(99,102,241,0.10);
       display: flex;
       flex-direction: column;
       align-items: stretch;
       gap: 10px;
       position: relative;
+    }
+    @media (max-width: 700px) {
+      .resume-ai-qa {
+        padding-bottom: 64px; /* 移动端底部padding更大 */
+      }
     }
     .resume-ai-qa-close {
       position: absolute;
@@ -769,7 +774,7 @@
     <div class="contact" id="profile-contact">
       <a href="mailto:nolantang2023@gmail.com">nolantang2023@gmail.com</a>
       <a href="https://www.linkedin.com/in/nolantang/" target="_blank">LinkedIn</a>
-      <a href="https://github.com/IrisTang2024" target="_blank">GitHub</a>
+      <a href="https://github.com/NolanTang2025" target="_blank">GitHub</a>
       <a href="https://iristang.com" target="_blank">Personal Site</a>
     </div>
   </div>
@@ -783,6 +788,7 @@
         <button class="resume-drawer-close" id="resume-drawer-close" title="Close">×</button>
       </div>
       <iframe class="resume-pdf" id="resume-pdf" src="resume.pdf"></iframe>
+      <button id="resume-ai-qa-reopen" style="display:none;margin:18px auto 0 auto;padding:10px 28px;font-size:1.08rem;font-weight:600;color:#6366f1;background:#fff;border:1.5px solid #6366f1;border-radius:14px;box-shadow:0 2px 12px rgba(99,102,241,0.08);cursor:pointer;transition:background 0.18s,color 0.18s,border 0.18s;" title="Open Q&A">🤖 Open Resume Q&A</button>
       <div class="resume-tip" id="resume-tip"></div>
       <div class="resume-ai-qa" id="resume-ai-qa">
         <button class="resume-ai-qa-close" id="resume-ai-qa-close" title="Close Q&A">×</button>
@@ -800,6 +806,14 @@
   </div>
   <div class="dashboard">
     <div class="chart-card">
+      <div class="chart-title" id="github-title">GitHub Commits</div>
+      <canvas id="githubChart" width="400" height="200"></canvas>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title" id="reddit-title">Reddit Posts</div>
+      <canvas id="redditChart" width="400" height="200"></canvas>
+    </div>
+    <div class="chart-card">
       <div class="chart-title" id="study-title">Study Hours</div>
       <canvas id="studyChart" width="400" height="200"></canvas>
     </div>
@@ -810,14 +824,6 @@
     <div class="chart-card">
       <div class="chart-title" id="task-title">Tasks Done</div>
       <canvas id="taskChart" width="400" height="200"></canvas>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title" id="reddit-title">Reddit Posts</div>
-      <canvas id="redditChart" width="400" height="200"></canvas>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title" id="github-title">GitHub Commits</div>
-      <canvas id="githubChart" width="400" height="200"></canvas>
     </div>
   </div>
   <section class="projects-timeline">
@@ -1016,6 +1022,13 @@
       document.getElementById('resume-ai-qa-close').onclick = function() {
         document.getElementById('resume-ai-qa').style.display = 'none';
         document.getElementById('resume-pdf').classList.add('pdf-full');
+        document.getElementById('resume-ai-qa-reopen').style.display = 'block';
+      };
+      // QA重开按钮逻辑
+      document.getElementById('resume-ai-qa-reopen').onclick = function() {
+        document.getElementById('resume-ai-qa').style.display = 'flex';
+        document.getElementById('resume-pdf').classList.remove('pdf-full');
+        this.style.display = 'none';
       };
     });
     // Avatar click
@@ -1268,6 +1281,10 @@
           setTimeout(() => {
             aiTypeWriter(qa.a, ()=>{});
           }, 400);
+          // 新增：自动滚动Q&A区域到底部，保证按钮可见
+          setTimeout(() => {
+            document.getElementById('resume-ai-qa').scrollIntoView({block:'end',behavior:'smooth'});
+          }, 50);
         };
         row.appendChild(btn);
       });
