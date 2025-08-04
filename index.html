@@ -815,15 +815,15 @@
     </div>
     <div class="chart-card">
       <div class="chart-title" id="study-title">Study Hours</div>
-      <canvas id="studyChart" width="400" height="200"></canvas>
+  <canvas id="studyChart" width="400" height="200"></canvas>
     </div>
     <div class="chart-card">
       <div class="chart-title" id="mood-title">Mood Score</div>
-      <canvas id="moodChart" width="400" height="200"></canvas>
+  <canvas id="moodChart" width="400" height="200"></canvas>
     </div>
     <div class="chart-card">
       <div class="chart-title" id="task-title">Tasks Done</div>
-      <canvas id="taskChart" width="400" height="200"></canvas>
+  <canvas id="taskChart" width="400" height="200"></canvas>
     </div>
   </div>
   <section class="projects-timeline">
@@ -1164,23 +1164,23 @@
           plugins: [ChartDataLabels]
         });
         // GitHub chart
-        const githubData = data.githubCommits || {};
+    const githubData = data.githubCommits || {};
         const githubDates = Object.keys(githubData).sort();
-        const githubCommits = githubDates.map(date => githubData[date]);
+    const githubCommits = githubDates.map(date => githubData[date]);
         window.githubChartObj = new Chart(document.getElementById('githubChart'), {
-          type: 'bar',
-          data: {
-            labels: githubDates,
-            datasets: [{
+    type: 'bar',
+    data: {
+        labels: githubDates,
+        datasets: [{
               label: 'GitHub Commits',
-              data: githubCommits,
-              backgroundColor: 'rgba(54, 162, 235, 0.6)'
-            }]
-          },
-          options: {
-            plugins: {
-              title: {
-                display: true,
+          data: githubCommits,
+          backgroundColor: 'rgba(54, 162, 235, 0.6)'
+        }]
+    },
+  options: {
+    plugins: {
+      title: {
+        display: true,
                 text: '📅 Daily GitHub Commits'
               },
               datalabels: {
